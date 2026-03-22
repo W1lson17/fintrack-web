@@ -5,6 +5,8 @@ import {
   Navigate,
 } from "react-router-dom";
 import { ROUTES } from "@/shared/constants/routes";
+import { AuthGuard } from "@/features/auth/components/AuthGuard";
+import { GuestGuard } from "@/features/auth/components/GuestGuard";
 
 /**
  * Lazy-loaded pages
@@ -51,9 +53,10 @@ const SavingGoalsPage = lazy(() =>
 /**
  * Application router
  *
- * - "/" redirects to "/dashboard" by default
- * - All pages are wrapped in Suspense for lazy loading support
- * - Auth routes are public — protected routes will be added with AuthGuard
+ * Route structure:
+ * - "/" redirects to "/dashboard"
+ * - GuestGuard: public routes — redirects to dashboard if authenticated
+ * - AuthGuard: protected routes — redirects to login if not authenticated
  */
 const router = createBrowserRouter([
   {
@@ -61,52 +64,64 @@ const router = createBrowserRouter([
     element: <Navigate to={ROUTES.DASHBOARD} replace />,
   },
   {
-    path: ROUTES.LOGIN,
-    element: (
-      <Suspense fallback={<div>Loading...</div>}>
-        <LoginPage />
-      </Suspense>
-    ),
+    // Public routes — accessible only when NOT authenticated
+    element: <GuestGuard />,
+    children: [
+      {
+        path: ROUTES.LOGIN,
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <LoginPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: ROUTES.REGISTER,
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <RegisterPage />
+          </Suspense>
+        ),
+      },
+    ],
   },
   {
-    path: ROUTES.REGISTER,
-    element: (
-      <Suspense fallback={<div>Loading...</div>}>
-        <RegisterPage />
-      </Suspense>
-    ),
-  },
-  {
-    path: ROUTES.DASHBOARD,
-    element: (
-      <Suspense fallback={<div>Loading...</div>}>
-        <DashboardPage />
-      </Suspense>
-    ),
-  },
-  {
-    path: ROUTES.TRANSACTIONS,
-    element: (
-      <Suspense fallback={<div>Loading...</div>}>
-        <TransactionsPage />
-      </Suspense>
-    ),
-  },
-  {
-    path: ROUTES.CATEGORIES,
-    element: (
-      <Suspense fallback={<div>Loading...</div>}>
-        <CategoriesPage />
-      </Suspense>
-    ),
-  },
-  {
-    path: ROUTES.SAVING_GOALS,
-    element: (
-      <Suspense fallback={<div>Loading...</div>}>
-        <SavingGoalsPage />
-      </Suspense>
-    ),
+    // Protected routes — accessible only when authenticated
+    element: <AuthGuard />,
+    children: [
+      {
+        path: ROUTES.DASHBOARD,
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <DashboardPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: ROUTES.TRANSACTIONS,
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <TransactionsPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: ROUTES.CATEGORIES,
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <CategoriesPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: ROUTES.SAVING_GOALS,
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <SavingGoalsPage />
+          </Suspense>
+        ),
+      },
+    ],
   },
 ]);
 

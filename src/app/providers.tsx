@@ -1,5 +1,6 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { Toaster } from "@/components/ui/sonner"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "@/components/ui/sonner";
+import type { ReactNode } from "react";
 
 /**
  * QueryClient configuration
@@ -13,10 +14,10 @@ const queryClient = new QueryClient({
     queries: {
       staleTime: 1000 * 60,
       retry: 1,
-      refetchOnWindowFocus: false
-    }
-  }
-})
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 /**
  * AppProviders component
@@ -24,12 +25,12 @@ const queryClient = new QueryClient({
  * Wraps the application with all global providers.
  * Add new providers here as the app grows.
  */
-export const AppProviders = ({ children }: { children: React.ReactNode }) => {
+export const AppProviders = ({ children }: { children: ReactNode }) => {
   return (
     <QueryClientProvider client={queryClient}>
       {children}
       {/* Sonner toast notifications — positioned top-right by default */}
       <Toaster richColors closeButton position="top-right" />
     </QueryClientProvider>
-  )
-}
+  );
+};
