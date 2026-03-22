@@ -7,6 +7,8 @@ import {
 import { ROUTES } from "@/shared/constants/routes";
 import { AuthGuard } from "@/features/auth/components/AuthGuard";
 import { GuestGuard } from "@/features/auth/components/GuestGuard";
+import { AuthLayout } from "@/shared/layouts/AuthLayout";
+import { AppLayout } from "@/shared/layouts/AppLayout";
 
 /**
  * Lazy-loaded pages
@@ -55,8 +57,8 @@ const SavingGoalsPage = lazy(() =>
  *
  * Route structure:
  * - "/" redirects to "/dashboard"
- * - GuestGuard: public routes — redirects to dashboard if authenticated
- * - AuthGuard: protected routes — redirects to login if not authenticated
+ * - GuestGuard + AuthLayout: public routes — login, register
+ * - AuthGuard + AppLayout: protected routes — dashboard, transactions, etc.
  */
 const router = createBrowserRouter([
   {
@@ -68,20 +70,25 @@ const router = createBrowserRouter([
     element: <GuestGuard />,
     children: [
       {
-        path: ROUTES.LOGIN,
-        element: (
-          <Suspense fallback={<div>Loading...</div>}>
-            <LoginPage />
-          </Suspense>
-        ),
-      },
-      {
-        path: ROUTES.REGISTER,
-        element: (
-          <Suspense fallback={<div>Loading...</div>}>
-            <RegisterPage />
-          </Suspense>
-        ),
+        element: <AuthLayout />,
+        children: [
+          {
+            path: ROUTES.LOGIN,
+            element: (
+              <Suspense fallback={<div>Loading...</div>}>
+                <LoginPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: ROUTES.REGISTER,
+            element: (
+              <Suspense fallback={<div>Loading...</div>}>
+                <RegisterPage />
+              </Suspense>
+            ),
+          },
+        ],
       },
     ],
   },
@@ -90,36 +97,41 @@ const router = createBrowserRouter([
     element: <AuthGuard />,
     children: [
       {
-        path: ROUTES.DASHBOARD,
-        element: (
-          <Suspense fallback={<div>Loading...</div>}>
-            <DashboardPage />
-          </Suspense>
-        ),
-      },
-      {
-        path: ROUTES.TRANSACTIONS,
-        element: (
-          <Suspense fallback={<div>Loading...</div>}>
-            <TransactionsPage />
-          </Suspense>
-        ),
-      },
-      {
-        path: ROUTES.CATEGORIES,
-        element: (
-          <Suspense fallback={<div>Loading...</div>}>
-            <CategoriesPage />
-          </Suspense>
-        ),
-      },
-      {
-        path: ROUTES.SAVING_GOALS,
-        element: (
-          <Suspense fallback={<div>Loading...</div>}>
-            <SavingGoalsPage />
-          </Suspense>
-        ),
+        element: <AppLayout />,
+        children: [
+          {
+            path: ROUTES.DASHBOARD,
+            element: (
+              <Suspense fallback={<div>Loading...</div>}>
+                <DashboardPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: ROUTES.TRANSACTIONS,
+            element: (
+              <Suspense fallback={<div>Loading...</div>}>
+                <TransactionsPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: ROUTES.CATEGORIES,
+            element: (
+              <Suspense fallback={<div>Loading...</div>}>
+                <CategoriesPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: ROUTES.SAVING_GOALS,
+            element: (
+              <Suspense fallback={<div>Loading...</div>}>
+                <SavingGoalsPage />
+              </Suspense>
+            ),
+          },
+        ],
       },
     ],
   },
