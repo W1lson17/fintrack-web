@@ -1,11 +1,16 @@
+import { AppProviders } from "./providers";
 import { AppRouter } from "./router";
 
 /**
  * App component
  *
- * Root component — renders the application router.
- * All routing logic lives in router.tsx.
+ * Root component — wraps the application with global providers
+ * and renders the router.
  */
 export const App = () => {
-  return <AppRouter />;
+  return (
+    <AppProviders>
+      <AppRouter />
+    </AppProviders>
+  );
 };
