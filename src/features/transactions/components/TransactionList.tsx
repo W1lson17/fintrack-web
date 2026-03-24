@@ -1,6 +1,4 @@
-import { Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -10,13 +8,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { DeleteConfirmDialog } from "@/shared/components/DeleteConfirmDialog";
 import { formatCurrency, formatDate } from "@/shared/utils/formatters";
 import type { Transaction } from "@/features/transactions/types/transaction.types";
 
 interface TransactionListProps {
   transactions: Transaction[];
   isLoading: boolean;
-  onDelete: (id: string) => void;
+  onDelete: (id: string) => Promise<void>;
   isDeleting: boolean;
 }
 
@@ -25,6 +24,7 @@ interface TransactionListProps {
  *
  * Displays a list of transactions in a table with delete action.
  * Shows skeleton rows while loading.
+ * Delete action requires confirmation via DeleteConfirmDialog.
  * Badge color reflects transaction type — green for INCOME, red for EXPENSE.
  */
 export const TransactionList = ({
@@ -104,15 +104,12 @@ export const TransactionList = ({
               </span>
             </TableCell>
             <TableCell>
-              <Button
-                variant="ghost"
-                size="icon"
+              <DeleteConfirmDialog
+                title="Delete Transaction"
+                description="Are you sure you want to delete this transaction? This action cannot be undone."
+                onConfirm={() => onDelete(transaction.id)}
                 disabled={isDeleting}
-                onClick={() => onDelete(transaction.id)}
-                className="text-muted-foreground hover:text-destructive"
-              >
-                <Trash2 className="size-4" />
-              </Button>
+              />
             </TableCell>
           </TableRow>
         ))}
