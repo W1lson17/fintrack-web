@@ -46,8 +46,13 @@ export const TransactionsPage = () => {
     });
   };
 
-  const handleDelete = (id: string) => {
-    deleteTransaction(id);
+  const handleDelete = (id: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      deleteTransaction(id, {
+        onSuccess: () => resolve(),
+        onError: (error) => reject(error),
+      });
+    });
   };
 
   return (
