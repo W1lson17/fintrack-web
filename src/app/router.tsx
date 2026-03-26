@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, type ReactNode } from "react";
 import {
   createBrowserRouter,
   RouterProvider,
@@ -9,12 +9,15 @@ import { AuthGuard } from "@/features/auth/components/AuthGuard";
 import { GuestGuard } from "@/features/auth/components/GuestGuard";
 import { AuthLayout } from "@/shared/layouts/AuthLayout";
 import { AppLayout } from "@/shared/layouts/AppLayout";
+import { ErrorBoundary } from "@/shared/components/ErrorBoundary";
+import { PageLoader } from "@/shared/components/PageLoader";
+import { NotFoundPage } from "@/shared/pages/NotFoundPage";
 
 /**
  * Lazy-loaded pages
  *
  * Each page is loaded on demand — reduces initial bundle size.
- * Suspense handles the loading state while the chunk is being fetched.
+ * ErrorBoundary wraps each lazy import — handles chunk fetch failures gracefully.
  */
 const LoginPage = lazy(() =>
   import("@/features/auth/pages/LoginPage").then((m) => ({
@@ -53,12 +56,26 @@ const SavingGoalsPage = lazy(() =>
 );
 
 /**
+ * withSuspense helper
+ *
+ * Wraps a lazy-loaded page with ErrorBoundary + Suspense.
+ * ErrorBoundary handles dynamic import failures.
+ * PageLoader is shown while the chunk is being fetched.
+ */
+const withSuspense = (component: ReactNode) => (
+  <ErrorBoundary>
+    <Suspense fallback={<PageLoader />}>{component}</Suspense>
+  </ErrorBoundary>
+);
+
+/**
  * Application router
  *
  * Route structure:
  * - "/" redirects to "/dashboard"
  * - GuestGuard + AuthLayout: public routes — login, register
  * - AuthGuard + AppLayout: protected routes — dashboard, transactions, etc.
+ * - "*" catches all unmatched routes — renders NotFoundPage
  */
 const router = createBrowserRouter([
   {
@@ -74,19 +91,11 @@ const router = createBrowserRouter([
         children: [
           {
             path: ROUTES.LOGIN,
-            element: (
-              <Suspense fallback={<div>Loading...</div>}>
-                <LoginPage />
-              </Suspense>
-            ),
+            element: withSuspense(<LoginPage />),
           },
           {
             path: ROUTES.REGISTER,
-            element: (
-              <Suspense fallback={<div>Loading...</div>}>
-                <RegisterPage />
-              </Suspense>
-            ),
+            element: withSuspense(<RegisterPage />),
           },
         ],
       },
@@ -101,39 +110,28 @@ const router = createBrowserRouter([
         children: [
           {
             path: ROUTES.DASHBOARD,
-            element: (
-              <Suspense fallback={<div>Loading...</div>}>
-                <DashboardPage />
-              </Suspense>
-            ),
+            element: withSuspense(<DashboardPage />),
           },
           {
             path: ROUTES.TRANSACTIONS,
-            element: (
-              <Suspense fallback={<div>Loading...</div>}>
-                <TransactionsPage />
-              </Suspense>
-            ),
+            element: withSuspense(<TransactionsPage />),
           },
           {
             path: ROUTES.CATEGORIES,
-            element: (
-              <Suspense fallback={<div>Loading...</div>}>
-                <CategoriesPage />
-              </Suspense>
-            ),
+            element: withSuspense(<CategoriesPage />),
           },
           {
             path: ROUTES.SAVING_GOALS,
-            element: (
-              <Suspense fallback={<div>Loading...</div>}>
-                <SavingGoalsPage />
-              </Suspense>
-            ),
+            element: withSuspense(<SavingGoalsPage />),
           },
         ],
       },
     ],
+  },
+  {
+    // Catch all unmatched routes
+    path: "*",
+    element: <NotFoundPage />,
   },
 ]);
 
