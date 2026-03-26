@@ -10,7 +10,10 @@ import { persist } from "zustand/middleware"
  * Stores:
  * - accessToken: short-lived JWT (15m) used in Authorization headers
  * - refreshToken: long-lived UUID (7d) used to rotate tokens
- * - isAuthenticated: derived from accessToken presence
+ *
+ * isAuthenticated is derived from accessToken presence — not stored separately.
+ * This prevents the bug where isAuthenticated resets to false on page refresh
+ * while tokens are still valid in localStorage.
  */
 
 interface AuthState {
@@ -36,7 +39,7 @@ export const useAuthStore = create<AuthStore>()(
 
       /**
        * Stores tokens after successful login or register.
-       * Sets isAuthenticated to true.
+       * Derives isAuthenticated from accessToken presence.
        */
       setTokens: (accessToken, refreshToken) =>
         set({ accessToken, refreshToken, isAuthenticated: true }),
@@ -49,11 +52,12 @@ export const useAuthStore = create<AuthStore>()(
         set({ accessToken: null, refreshToken: null, isAuthenticated: false })
     }),
     {
-      name: "fintrack-auth", // localStorage key
-      // Only persist tokens — actions are excluded automatically
+      name: "fintrack-auth",
+      // Persist tokens and derive isAuthenticated on rehydration
       partialize: (state) => ({
         accessToken: state.accessToken,
-        refreshToken: state.refreshToken
+        refreshToken: state.refreshToken,
+        isAuthenticated: !!state.accessToken
       })
     }
   )
