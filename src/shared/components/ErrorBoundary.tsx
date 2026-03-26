@@ -1,6 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { motion } from "framer-motion";
-import { AlertTriangle, RefreshCw } from "lucide-react";
+import { AlertTriangle, RefreshCw, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ErrorBoundaryProps {
@@ -11,14 +11,17 @@ interface ErrorBoundaryProps {
 interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
+  isOffline: boolean;
 }
 
 /**
  * ErrorBoundary component
  *
  * Catches JavaScript errors anywhere in the child component tree.
- * Handles dynamic import failures (lazy loading chunks) gracefully
- * by offering a reload option instead of showing a blank screen.
+ * Distinguishes between three error scenarios:
+ * 1. Network offline — server unreachable
+ * 2. Dynamic import failure — new deployment invalidated chunk URLs
+ * 3. General render error — unexpected application error
  *
  * Must be a class component — React error boundaries require lifecycle
  * methods (getDerivedStateFromError, componentDidCatch) not available in hooks.
@@ -29,11 +32,13 @@ export class ErrorBoundary extends Component<
 > {
   constructor(props: ErrorBoundaryProps) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, isOffline: false };
   }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    return { hasError: true, error };
+    // Check network connectivity at the moment the error occurs
+    const isOffline = !navigator.onLine;
+    return { hasError: true, error, isOffline };
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
@@ -58,8 +63,49 @@ export class ErrorBoundary extends Component<
   };
 
   private handleReset = () => {
-    this.setState({ hasError: false, error: null });
+    this.setState({ hasError: false, error: null, isOffline: false });
   };
+
+  private getErrorContent() {
+    const { error, isOffline } = this.state;
+    const isDynamicImport = this.isDynamicImportError(error);
+
+    // Network offline
+    if (isOffline) {
+      return {
+        icon: <WifiOff className="text-muted-foreground size-10" />,
+        iconBg: "bg-muted",
+        title: "No internet connection",
+        description: "Please check your connection and try again.",
+        showReset: true,
+        showReload: true,
+      };
+    }
+
+    // Dynamic import failure — server down or new deployment
+    if (isDynamicImport) {
+      return {
+        icon: <RefreshCw className="text-primary size-10" />,
+        iconBg: "bg-primary/10",
+        title: "Update available",
+        description:
+          "A new version of the app is available. Please reload to get the latest version.",
+        showReset: false,
+        showReload: true,
+      };
+    }
+
+    // General render error
+    return {
+      icon: <AlertTriangle className="text-destructive size-10" />,
+      iconBg: "bg-destructive/10",
+      title: "Something went wrong",
+      description:
+        "An unexpected error occurred. Try reloading the page or going back.",
+      showReset: true,
+      showReload: true,
+    };
+  }
 
   render() {
     if (this.state.hasError) {
@@ -67,7 +113,7 @@ export class ErrorBoundary extends Component<
         return this.props.fallback;
       }
 
-      const isDynamicImport = this.isDynamicImportError(this.state.error);
+      const content = this.getErrorContent();
 
       return (
         <div className="flex min-h-screen items-center justify-center p-6">
@@ -78,32 +124,28 @@ export class ErrorBoundary extends Component<
             className="max-w-md space-y-6 text-center"
           >
             <div className="flex justify-center">
-              <div className="bg-destructive/10 rounded-full p-4">
-                <AlertTriangle className="text-destructive size-10" />
+              <div className={`rounded-full p-4 ${content.iconBg}`}>
+                {content.icon}
               </div>
             </div>
 
             <div className="space-y-2">
-              <h2 className="text-2xl font-semibold">
-                {isDynamicImport ? "Update Available" : "Something went wrong"}
-              </h2>
-              <p className="text-muted-foreground">
-                {isDynamicImport
-                  ? "A new version of the app is available. Please reload to get the latest version."
-                  : "An unexpected error occurred. Try reloading the page or going back."}
-              </p>
+              <h2 className="text-2xl font-semibold">{content.title}</h2>
+              <p className="text-muted-foreground">{content.description}</p>
             </div>
 
             <div className="flex items-center justify-center gap-3">
-              {!isDynamicImport && (
+              {content.showReset && (
                 <Button variant="outline" onClick={this.handleReset}>
                   Try again
                 </Button>
               )}
-              <Button onClick={this.handleReload}>
-                <RefreshCw className="mr-2 size-4" />
-                Reload page
-              </Button>
+              {content.showReload && (
+                <Button onClick={this.handleReload}>
+                  <RefreshCw className="mr-2 size-4" />
+                  Reload page
+                </Button>
+              )}
             </div>
           </motion.div>
         </div>
