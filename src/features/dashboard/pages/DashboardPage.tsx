@@ -55,8 +55,8 @@ export const DashboardPage = () => {
 
   return (
     <div className="flex flex-col gap-6">
+      {/* MonthPicker aligned to the right — page title shown in navbar */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Dashboard</h1>
         <MonthPicker
           month={month}
           year={year}

@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
+import { useTheme } from "next-themes";
 import {
   LayoutDashboard,
   ArrowLeftRight,
@@ -9,6 +10,9 @@ import {
   LogOut,
   Menu,
   ChevronRight,
+  Sun,
+  Moon,
+  User,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -18,51 +22,52 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ROUTES } from "@/shared/constants/routes";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
+import { usePageTitle } from "@/shared/hooks/usePageTitle";
 
 /**
  * Navigation items for the sidebar
  */
 const NAV_ITEMS = [
-  {
-    label: "Dashboard",
-    icon: LayoutDashboard,
-    to: ROUTES.DASHBOARD,
-  },
-  {
-    label: "Transactions",
-    icon: ArrowLeftRight,
-    to: ROUTES.TRANSACTIONS,
-  },
-  {
-    label: "Categories",
-    icon: Tag,
-    to: ROUTES.CATEGORIES,
-  },
-  {
-    label: "Saving Goals",
-    icon: PiggyBank,
-    to: ROUTES.SAVING_GOALS,
-  },
+  { label: "Dashboard", icon: LayoutDashboard, to: ROUTES.DASHBOARD },
+  { label: "Transactions", icon: ArrowLeftRight, to: ROUTES.TRANSACTIONS },
+  { label: "Categories", icon: Tag, to: ROUTES.CATEGORIES },
+  { label: "Saving Goals", icon: PiggyBank, to: ROUTES.SAVING_GOALS },
 ] as const;
+
+/**
+ * ThemeToggle component
+ *
+ * Toggles between light and dark mode via next-themes.
+ * Shows Sun icon in dark mode, Moon icon in light mode.
+ */
+const ThemeToggle = () => {
+  const { theme, setTheme } = useTheme();
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      aria-label="Toggle theme"
+    >
+      <Sun className="size-5 scale-100 rotate-0 transition-transform dark:scale-0 dark:-rotate-90" />
+      <Moon className="absolute size-5 scale-0 rotate-90 transition-transform dark:scale-100 dark:rotate-0" />
+    </Button>
+  );
+};
 
 /**
  * SidebarContent component
  *
  * Shared between desktop sidebar and mobile drawer.
+ * Contains logo and navigation only — user actions moved to navbar.
  */
 const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
-  const { clearTokens } = useAuthStore();
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    clearTokens();
-    navigate(ROUTES.LOGIN);
-  };
-
   return (
     <div className="flex h-full flex-col py-6">
       {/* Logo */}
@@ -101,32 +106,8 @@ const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
 
       <Separator className="my-4" />
 
-      {/* User section */}
-      <div className="px-3">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="hover:bg-accent flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors">
-              <Avatar className="size-7">
-                <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                  U
-                </AvatarFallback>
-              </Avatar>
-              <span className="flex-1 truncate text-left font-medium">
-                My Account
-              </span>
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem
-              onClick={handleLogout}
-              className="text-destructive focus:text-destructive cursor-pointer"
-            >
-              <LogOut className="mr-2 size-4" />
-              Log out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      {/* App version */}
+      <p className="text-muted-foreground px-6 text-xs">Fintrack v1.0.0</p>
     </div>
   );
 };
@@ -137,9 +118,19 @@ const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
  * Layout for authenticated routes.
  * - Desktop: fixed sidebar (260px) + main content area with top navbar
  * - Mobile: collapsible drawer triggered by hamburger menu
+ * - Navbar: page title breadcrumb, theme toggle and user dropdown
  */
 export const AppLayout = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { clearTokens } = useAuthStore();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const pageTitle = usePageTitle();
+
+  const handleLogout = () => {
+    clearTokens();
+    navigate(ROUTES.LOGIN);
+  };
 
   return (
     <div className="bg-background flex min-h-screen">
@@ -151,33 +142,73 @@ export const AppLayout = () => {
       {/* Main content */}
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Top navbar */}
-        <header className="bg-card flex h-14 shrink-0 items-center gap-4 border-b px-6">
-          {/* Mobile menu trigger */}
-          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="lg:hidden">
-                <Menu className="size-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-65 p-0">
-              <SidebarContent onNavigate={() => setMobileOpen(false)} />
-            </SheetContent>
-          </Sheet>
+        <header className="bg-card flex h-14 shrink-0 items-center justify-between border-b px-6">
+          <div className="flex items-center gap-4">
+            {/* Mobile menu trigger */}
+            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="lg:hidden">
+                  <Menu className="size-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-65 p-0">
+                <SidebarContent onNavigate={() => setMobileOpen(false)} />
+              </SheetContent>
+            </Sheet>
+
+            {/* Page title */}
+            {pageTitle && (
+              <h1 className="text-base font-semibold">{pageTitle}</h1>
+            )}
+          </div>
+
+          {/* Right side actions */}
+          <div className="flex items-center gap-2">
+            {/* Theme toggle */}
+            <ThemeToggle />
+
+            {/* User dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <Avatar className="size-8">
+                    <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                      U
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem
+                  onClick={() => navigate(ROUTES.PROFILE)}
+                  className="cursor-pointer"
+                >
+                  <User className="mr-2 size-4" />
+                  Profile
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="text-destructive focus:text-destructive cursor-pointer"
+                >
+                  <LogOut className="mr-2 size-4" />
+                  Log out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </header>
 
         {/* Page content */}
         <main className="flex-1 overflow-auto p-6">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={location.pathname}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Outlet />
-            </motion.div>
-          </AnimatePresence>
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Outlet />
+          </motion.div>
         </main>
       </div>
     </div>
