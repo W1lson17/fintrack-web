@@ -9,8 +9,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { CategoryList } from "@/features/categories/components/CategoryList";
+import { DataTable } from "@/shared/components/DataTable";
 import { CategoryForm } from "@/features/categories/components/CategoryForm";
+import { getCategoryColumns } from "@/features/categories/components/columns";
 import {
   useCategories,
   useCreateCategory,
@@ -21,16 +22,16 @@ import type { CreateCategoryRequest } from "@/features/categories/types/category
 /**
  * CategoriesPage
  *
- * Displays a paginated list of categories with create and delete actions.
+ * Displays a server-side paginated table of categories
+ * with create and delete actions.
  */
 export const CategoriesPage = () => {
   const [open, setOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
 
-  const { data: categoriesData, isLoading: categoriesLoading } =
-    useCategories();
-
+  const { data: categoriesData, isLoading } = useCategories({ page, limit });
   const { mutate: createCategory, isPending: isCreating } = useCreateCategory();
-
   const { mutate: deleteCategory, isPending: isDeleting } = useDeleteCategory();
 
   const handleCreate = (data: CreateCategoryRequest) => {
@@ -47,6 +48,16 @@ export const CategoriesPage = () => {
       });
     });
   };
+
+  const handleLimitChange = (newLimit: number) => {
+    setLimit(newLimit);
+    setPage(1);
+  };
+
+  const columns = getCategoryColumns({
+    onDelete: handleDelete,
+    isDeleting,
+  });
 
   return (
     <div className="flex flex-col gap-6">
@@ -75,11 +86,19 @@ export const CategoriesPage = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <CategoryList
-            categories={categoriesData?.data ?? []}
-            isLoading={categoriesLoading}
-            onDelete={handleDelete}
-            isDeleting={isDeleting}
+          <DataTable
+            columns={columns}
+            data={categoriesData?.data ?? []}
+            isLoading={isLoading}
+            pagination={{
+              page,
+              limit,
+              total: categoriesData?.meta.total ?? 0,
+              totalPages: categoriesData?.meta.totalPages ?? 0,
+            }}
+            onPageChange={setPage}
+            onLimitChange={handleLimitChange}
+            emptyMessage="No categories found. Create your first one."
           />
         </CardContent>
       </Card>

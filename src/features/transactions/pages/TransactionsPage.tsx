@@ -9,8 +9,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { TransactionList } from "@/features/transactions/components/TransactionList";
+import { DataTable } from "@/shared/components/DataTable";
 import { TransactionForm } from "@/features/transactions/components/TransactionForm";
+import { getTransactionColumns } from "@/features/transactions/components/columns";
 import {
   useTransactions,
   useCreateTransaction,
@@ -22,17 +23,22 @@ import type { CreateTransactionRequest } from "@/features/transactions/types/tra
 /**
  * TransactionsPage
  *
- * Displays a paginated list of transactions with create and delete actions.
- * Categories are fetched to populate the transaction form select.
+ * Displays a server-side paginated table of transactions
+ * with create and delete actions.
+ * Categories are fetched without pagination — used to populate the form select.
  */
 export const TransactionsPage = () => {
   const [open, setOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
 
   const { data: transactionsData, isLoading: transactionsLoading } =
-    useTransactions();
+    useTransactions({ page, limit });
 
-  const { data: categoriesData, isLoading: categoriesLoading } =
-    useCategories();
+  // Fetch all categories for the form select — no pagination needed here
+  const { data: categoriesData, isLoading: categoriesLoading } = useCategories({
+    limit: 100,
+  });
 
   const { mutate: createTransaction, isPending: isCreating } =
     useCreateTransaction();
@@ -54,6 +60,16 @@ export const TransactionsPage = () => {
       });
     });
   };
+
+  const handleLimitChange = (newLimit: number) => {
+    setLimit(newLimit);
+    setPage(1);
+  };
+
+  const columns = getTransactionColumns({
+    onDelete: handleDelete,
+    isDeleting,
+  });
 
   return (
     <div className="flex flex-col gap-6">
@@ -86,11 +102,19 @@ export const TransactionsPage = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <TransactionList
-            transactions={transactionsData?.data ?? []}
+          <DataTable
+            columns={columns}
+            data={transactionsData?.data ?? []}
             isLoading={transactionsLoading}
-            onDelete={handleDelete}
-            isDeleting={isDeleting}
+            pagination={{
+              page,
+              limit,
+              total: transactionsData?.meta.total ?? 0,
+              totalPages: transactionsData?.meta.totalPages ?? 0,
+            }}
+            onPageChange={setPage}
+            onLimitChange={handleLimitChange}
+            emptyMessage="No transactions found. Create your first one."
           />
         </CardContent>
       </Card>
