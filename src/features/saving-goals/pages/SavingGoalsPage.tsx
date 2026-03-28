@@ -33,41 +33,27 @@ export const SavingGoalsPage = () => {
 
   const { data: savingGoalsData, isLoading } = useSavingGoals();
 
-  const { mutate: createSavingGoal, isPending: isCreating } =
+  const { mutateAsync: createSavingGoal, isPending: isCreating } =
     useCreateSavingGoal();
-  const { mutate: updateProgress, isPending: isUpdating } =
+  const { mutateAsync: updateProgress, isPending: isUpdating } =
     useUpdateSavingGoalProgress();
-  const { mutate: deleteSavingGoal, isPending: isDeleting } =
+  const { mutateAsync: deleteSavingGoal, isPending: isDeleting } =
     useDeleteSavingGoal();
 
-  const handleCreate = (data: CreateSavingGoalRequest) => {
-    createSavingGoal(data, {
-      onSuccess: () => setOpen(false),
-    });
+  const handleCreate = async (data: CreateSavingGoalRequest) => {
+    await createSavingGoal(data);
+    setOpen(false);
   };
 
-  const handleUpdateProgress = (
+  const handleUpdateProgress = async (
     id: string,
     data: UpdateSavingGoalProgressRequest,
   ): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      updateProgress(
-        { id, data },
-        {
-          onSuccess: () => resolve(),
-          onError: (error) => reject(error),
-        },
-      );
-    });
+    await updateProgress({ id, data });
   };
 
-  const handleDelete = (id: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      deleteSavingGoal(id, {
-        onSuccess: () => resolve(),
-        onError: (error) => reject(error),
-      });
-    });
+  const handleDelete = async (id: string): Promise<void> => {
+    await deleteSavingGoal(id);
   };
 
   return (
