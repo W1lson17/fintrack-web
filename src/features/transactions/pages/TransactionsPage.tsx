@@ -40,25 +40,19 @@ export const TransactionsPage = () => {
     limit: 100,
   });
 
-  const { mutate: createTransaction, isPending: isCreating } =
+  const { mutateAsync: createTransaction, isPending: isCreating } =
     useCreateTransaction();
 
-  const { mutate: deleteTransaction, isPending: isDeleting } =
+  const { mutateAsync: deleteTransaction, isPending: isDeleting } =
     useDeleteTransaction();
 
-  const handleCreate = (data: CreateTransactionRequest) => {
-    createTransaction(data, {
-      onSuccess: () => setOpen(false),
-    });
+  const handleCreate = async (data: CreateTransactionRequest) => {
+    await createTransaction(data);
+    setOpen(false);
   };
 
-  const handleDelete = (id: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      deleteTransaction(id, {
-        onSuccess: () => resolve(),
-        onError: (error) => reject(error),
-      });
-    });
+  const handleDelete = async (id: string): Promise<void> => {
+    await deleteTransaction(id);
   };
 
   const handleLimitChange = (newLimit: number) => {

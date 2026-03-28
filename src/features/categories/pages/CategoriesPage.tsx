@@ -31,22 +31,18 @@ export const CategoriesPage = () => {
   const [limit, setLimit] = useState(10);
 
   const { data: categoriesData, isLoading } = useCategories({ page, limit });
-  const { mutate: createCategory, isPending: isCreating } = useCreateCategory();
-  const { mutate: deleteCategory, isPending: isDeleting } = useDeleteCategory();
+  const { mutateAsync: createCategory, isPending: isCreating } =
+    useCreateCategory();
+  const { mutateAsync: deleteCategory, isPending: isDeleting } =
+    useDeleteCategory();
 
-  const handleCreate = (data: CreateCategoryRequest) => {
-    createCategory(data, {
-      onSuccess: () => setOpen(false),
-    });
+  const handleCreate = async (data: CreateCategoryRequest) => {
+    await createCategory(data);
+    setOpen(false);
   };
 
-  const handleDelete = (id: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      deleteCategory(id, {
-        onSuccess: () => resolve(),
-        onError: (error) => reject(error),
-      });
-    });
+  const handleDelete = async (id: string): Promise<void> => {
+    await deleteCategory(id);
   };
 
   const handleLimitChange = (newLimit: number) => {
