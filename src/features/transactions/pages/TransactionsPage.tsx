@@ -11,6 +11,10 @@ import {
 } from "@/components/ui/dialog";
 import { DataTable } from "@/shared/components/DataTable";
 import { TransactionForm } from "@/features/transactions/components/TransactionForm";
+import {
+  TransactionFilters,
+  type TransactionFiltersState,
+} from "@/features/transactions/components/TransactionFilters";
 import { getTransactionColumns } from "@/features/transactions/components/columns";
 import {
   useTransactions,
@@ -24,18 +28,24 @@ import type { CreateTransactionRequest } from "@/features/transactions/types/tra
  * TransactionsPage
  *
  * Displays a server-side paginated table of transactions
- * with create and delete actions.
- * Categories are fetched without pagination — used to populate the form select.
+ * with create, filter and delete actions.
+ * Supports filtering by type and category via collapsible filter panel.
  */
 export const TransactionsPage = () => {
   const [open, setOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
+  const [filters, setFilters] = useState<TransactionFiltersState>({});
 
   const { data: transactionsData, isLoading: transactionsLoading } =
-    useTransactions({ page, limit });
+    useTransactions({
+      page,
+      limit,
+      type: filters.type,
+      categoryId: filters.categoryId,
+    });
 
-  // Fetch all categories for the form select — no pagination needed here
+  // Fetch all categories — used by both the filter panel and the create form
   const { data: categoriesData, isLoading: categoriesLoading } = useCategories({
     limit: 100,
   });
@@ -53,6 +63,17 @@ export const TransactionsPage = () => {
 
   const handleDelete = async (id: string): Promise<void> => {
     await deleteTransaction(id);
+  };
+
+  const handleFiltersChange = (newFilters: TransactionFiltersState) => {
+    setFilters(newFilters);
+    // Reset to page 1 when filters change
+    setPage(1);
+  };
+
+  const handleClearFilters = () => {
+    setFilters({});
+    setPage(1);
   };
 
   const handleLimitChange = (newLimit: number) => {
@@ -89,10 +110,16 @@ export const TransactionsPage = () => {
       </div>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="space-y-3">
           <CardTitle className="text-base font-medium">
             All Transactions
           </CardTitle>
+          <TransactionFilters
+            filters={filters}
+            categories={categoriesData?.data ?? []}
+            onFiltersChange={handleFiltersChange}
+            onClearFilters={handleClearFilters}
+          />
         </CardHeader>
         <CardContent>
           <DataTable
