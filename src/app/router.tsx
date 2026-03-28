@@ -55,6 +55,12 @@ const SavingGoalsPage = lazy(() =>
   })),
 );
 
+const ProfilePage = lazy(() =>
+  import("@/features/profile/pages/ProfilePage").then((m) => ({
+    default: m.ProfilePage,
+  })),
+);
+
 /**
  * withSuspense helper
  *
@@ -123,6 +129,10 @@ const router = createBrowserRouter([
           {
             path: ROUTES.SAVING_GOALS,
             element: withSuspense(<SavingGoalsPage />),
+          },
+          {
+            path: ROUTES.PROFILE,
+            element: withSuspense(<ProfilePage />),
           },
         ],
       },
