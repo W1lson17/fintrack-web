@@ -11,7 +11,8 @@ const PAGE_TITLES: Record<string, string> = {
   [ROUTES.DASHBOARD]: "Dashboard",
   [ROUTES.TRANSACTIONS]: "Transactions",
   [ROUTES.CATEGORIES]: "Categories",
-  [ROUTES.SAVING_GOALS]: "Saving Goals"
+  [ROUTES.SAVING_GOALS]: "Saving Goals",
+  [ROUTES.PROFILE]: "Profile"
 }
 
 /**

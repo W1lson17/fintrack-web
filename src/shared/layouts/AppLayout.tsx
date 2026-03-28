@@ -28,6 +28,7 @@ import {
 import { ROUTES } from "@/shared/constants/routes";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 import { usePageTitle } from "@/shared/hooks/usePageTitle";
+import { useProfile } from "@/features/profile/hooks/useProfile";
 
 /**
  * Navigation items for the sidebar
@@ -126,6 +127,7 @@ export const AppLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const pageTitle = usePageTitle();
+  const { data: profile } = useProfile();
 
   const handleLogout = () => {
     clearTokens();
@@ -173,7 +175,7 @@ export const AppLayout = () => {
                 <Button variant="ghost" size="icon" className="rounded-full">
                   <Avatar className="size-8">
                     <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                      U
+                      {profile?.name?.charAt(0).toUpperCase() ?? "U"}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
