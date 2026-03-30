@@ -61,6 +61,18 @@ const ProfilePage = lazy(() =>
   })),
 );
 
+const ForgotPasswordPage = lazy(() =>
+  import("@/features/auth/pages/ForgotPasswordPage").then((m) => ({
+    default: m.ForgotPasswordPage,
+  })),
+);
+
+const ResetPasswordPage = lazy(() =>
+  import("@/features/auth/pages/ResetPasswordPage").then((m) => ({
+    default: m.ResetPasswordPage,
+  })),
+);
+
 /**
  * withSuspense helper
  *
@@ -102,6 +114,14 @@ const router = createBrowserRouter([
           {
             path: ROUTES.REGISTER,
             element: withSuspense(<RegisterPage />),
+          },
+          {
+            path: ROUTES.FORGOT_PASSWORD,
+            element: withSuspense(<ForgotPasswordPage />),
+          },
+          {
+            path: ROUTES.RESET_PASSWORD,
+            element: withSuspense(<ResetPasswordPage />),
           },
         ],
       },

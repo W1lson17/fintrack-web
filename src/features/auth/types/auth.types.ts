@@ -43,3 +43,18 @@ export interface RefreshRequest {
 export interface LogoutRequest {
   refreshToken: string
 }
+
+/**
+ * Request body for /auth/forgot-password
+ */
+export interface ForgotPasswordRequest {
+  email: string
+}
+
+/**
+ * Request body for /auth/reset-password
+ */
+export interface ResetPasswordRequest {
+  token: string
+  newPassword: string
+}

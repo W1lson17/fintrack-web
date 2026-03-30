@@ -1,5 +1,5 @@
 import { api } from "@/shared/services/api"
-import type { AuthResponse, LoginRequest, RegisterRequest, LogoutRequest } from "@/features/auth/types/auth.types"
+import type { AuthResponse, LoginRequest, RegisterRequest, LogoutRequest, ForgotPasswordRequest, ResetPasswordRequest } from "@/features/auth/types/auth.types"
 
 /**
  * Auth Service
@@ -32,4 +32,20 @@ export const loginService = async (data: LoginRequest): Promise<AuthResponse> =>
  */
 export const logoutService = async (data: LogoutRequest): Promise<void> => {
   await api.post("/auth/logout", data)
+}
+
+/**
+ * Sends a password reset email to the provided address.
+ * Always resolves — API returns 204 regardless of email existence.
+ */
+export const forgotPasswordService = async (data: ForgotPasswordRequest): Promise<void> => {
+  await api.post("/auth/forgot-password", data)
+}
+
+/**
+ * Resets the user's password using a valid reset token.
+ * Token is extracted from the URL query params and passed here.
+ */
+export const resetPasswordService = async (data: ResetPasswordRequest): Promise<void> => {
+  await api.post("/auth/reset-password", data)
 }
