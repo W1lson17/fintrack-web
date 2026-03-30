@@ -6,41 +6,68 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  loginSchema,
-  type LoginFormValues,
+  forgotPasswordSchema,
+  type ForgotPasswordFormValues,
 } from "@/features/auth/schemas/auth.schemas";
-import { useLogin } from "@/features/auth/hooks/useAuth";
+import { useForgotPassword } from "@/features/auth/hooks/useAuth";
 import { ROUTES } from "@/shared/constants/routes";
 
 /**
- * LoginPage
+ * ForgotPasswordPage
  *
- * Public page for user authentication.
+ * Public page for requesting a password reset email.
  * Uses React Hook Form + Zod for form validation.
  * Rendered inside AuthLayout.
  */
-export const LoginPage = () => {
-  const { mutate: login, isPending } = useLogin();
+export const ForgotPasswordPage = () => {
+  const { mutate: forgotPassword, isPending, isSuccess } = useForgotPassword();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
+  } = useForm<ForgotPasswordFormValues>({
+    resolver: zodResolver(forgotPasswordSchema),
   });
 
-  const onSubmit = (data: LoginFormValues) => {
-    login(data);
+  const onSubmit = (data: ForgotPasswordFormValues) => {
+    forgotPassword(data);
   };
+
+  // Show success state after submission — prevents user enumeration
+  if (isSuccess) {
+    return (
+      <div className="space-y-6">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold tracking-tight">
+            Check your email
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            If an account exists for that email, we've sent a password reset
+            link. Check your inbox.
+          </p>
+        </div>
+        <p className="text-muted-foreground text-center text-sm">
+          <Link
+            to={ROUTES.LOGIN}
+            className="text-primary font-medium hover:underline"
+          >
+            Back to sign in
+          </Link>
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="space-y-1">
-        <h1 className="text-2xl font-bold tracking-tight">Welcome back</h1>
+        <h1 className="text-2xl font-bold tracking-tight">
+          Forgot your password?
+        </h1>
         <p className="text-muted-foreground text-sm">
-          Sign in to your account to continue
+          Enter your email and we'll send you a reset link.
         </p>
       </div>
 
@@ -61,51 +88,26 @@ export const LoginPage = () => {
           )}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
-          <Input
-            id="password"
-            type="password"
-            placeholder="••••••••"
-            autoComplete="current-password"
-            disabled={isPending}
-            {...register("password")}
-          />
-          {errors.password && (
-            <p className="text-destructive text-xs">
-              {errors.password.message}
-            </p>
-          )}
-          <div className="flex justify-end">
-            <Link
-              to={ROUTES.FORGOT_PASSWORD}
-              className="text-muted-foreground hover:text-primary text-xs hover:underline"
-            >
-              Forgot password?
-            </Link>
-          </div>
-        </div>
-
         <Button type="submit" className="w-full" disabled={isPending}>
           {isPending ? (
             <>
               <Loader2 className="mr-2 size-4 animate-spin" />
-              Signing in...
+              Sending...
             </>
           ) : (
-            "Sign in"
+            "Send reset link"
           )}
         </Button>
       </form>
 
       {/* Footer */}
       <p className="text-muted-foreground text-center text-sm">
-        Don't have an account?{" "}
+        Remember your password?{" "}
         <Link
-          to={ROUTES.REGISTER}
+          to={ROUTES.LOGIN}
           className="text-primary font-medium hover:underline"
         >
-          Create one
+          Back to sign in
         </Link>
       </p>
     </div>

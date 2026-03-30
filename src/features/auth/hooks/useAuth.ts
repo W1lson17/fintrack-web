@@ -2,9 +2,9 @@ import { useMutation } from "@tanstack/react-query"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import { useAuthStore } from "@/features/auth/stores/auth.store"
-import { loginService, registerService, logoutService } from "@/features/auth/services/auth.service"
+import { loginService, registerService, logoutService, forgotPasswordService, resetPasswordService } from "@/features/auth/services/auth.service"
 import { ROUTES } from "@/shared/constants/routes"
-import type { LoginRequest, RegisterRequest } from "@/features/auth/types/auth.types"
+import type { LoginRequest, RegisterRequest, ForgotPasswordRequest, ResetPasswordRequest } from "@/features/auth/types/auth.types"
 import { getErrorMessage } from "@/shared/utils/errors"
 
 /**
@@ -77,6 +77,47 @@ export const useLogout = () => {
       // Clear tokens even if API call fails
       clearTokens()
       navigate(ROUTES.LOGIN)
+    }
+  })
+}
+
+/**
+ * useForgotPassword hook
+ *
+ * Handles forgot password form submission.
+ * On success: shows toast — API always returns 204 regardless of email existence.
+ * On error: shows toast with error message from API.
+ */
+export const useForgotPassword = () => {
+  return useMutation({
+    mutationFn: (data: ForgotPasswordRequest) => forgotPasswordService(data),
+    onSuccess: () => {
+      toast.success("If an account exists, a reset link has been sent to your email.")
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, "Could not send reset email. Please try again."))
+    }
+  })
+}
+
+/**
+ * useResetPassword hook
+ *
+ * Handles reset password form submission.
+ * On success: shows toast and redirects to login.
+ * On error: shows toast with error message from API.
+ */
+export const useResetPassword = () => {
+  const navigate = useNavigate()
+
+  return useMutation({
+    mutationFn: (data: ResetPasswordRequest) => resetPasswordService(data),
+    onSuccess: () => {
+      toast.success("Password reset successfully. Please log in with your new password.")
+      navigate(ROUTES.LOGIN)
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, "Could not reset password. The link may have expired."))
     }
   })
 }
