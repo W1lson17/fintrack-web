@@ -14,4 +14,9 @@ export const ROUTES = {
   TRANSACTIONS: "/transactions",
   CATEGORIES: "/categories",
   SAVING_GOALS: "/saving-goals",
+  PROFILE: "/profile",
+
+  // Forgot password
+  FORGOT_PASSWORD: "/forgot-password",
+  RESET_PASSWORD: "/reset-password",
 } as const

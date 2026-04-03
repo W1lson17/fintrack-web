@@ -1,0 +1,13 @@
+name: fintrack-web-prod
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+    container_name: fintrack-web-prod
+    ports:
+      - "80:80"
+    restart: unless-stopped
