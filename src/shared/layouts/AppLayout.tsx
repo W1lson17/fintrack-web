@@ -26,7 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ROUTES } from "@/shared/constants/routes";
-import { useAuthStore } from "@/features/auth/stores/auth.store";
+import { useLogout } from "@/features/auth/hooks/useAuth";
 import { usePageTitle } from "@/shared/hooks/usePageTitle";
 import { useProfile } from "@/features/profile/hooks/useProfile";
 
@@ -123,15 +123,14 @@ const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
  */
 export const AppLayout = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { clearTokens } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
   const pageTitle = usePageTitle();
   const { data: profile } = useProfile();
+  const { mutate: logout } = useLogout();
 
   const handleLogout = () => {
-    clearTokens();
-    navigate(ROUTES.LOGIN);
+    logout();
   };
 
   return (

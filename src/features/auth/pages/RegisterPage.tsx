@@ -31,7 +31,6 @@ export const RegisterPage = () => {
   });
 
   const onSubmit = (data: RegisterFormValues) => {
-    console.log(data)
     register({
       name: data.name,
       email: data.email,
