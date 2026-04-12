@@ -120,7 +120,7 @@ const router = createBrowserRouter([
             element: withSuspense(<ForgotPasswordPage />),
           },
           {
-            path: ROUTES.RESET_PASSWORD,
+            path: `${ROUTES.RESET_PASSWORD}/:token`,
             element: withSuspense(<ResetPasswordPage />),
           },
         ],
