@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
@@ -22,9 +22,8 @@ import { ROUTES } from "@/shared/constants/routes";
  * Rendered inside AuthLayout.
  */
 export const ResetPasswordPage = () => {
-  const [searchParams] = useSearchParams();
+  const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
-  const token = searchParams.get("token");
 
   const { mutate: resetPassword, isPending } = useResetPassword();
 
