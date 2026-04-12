@@ -45,8 +45,6 @@ export const ResetPasswordPage = () => {
 
   const onSubmit = (data: ResetPasswordFormValues) => {
     if (!token) return;
-    console.log("TOKEN:", token); // 👈 agregar
-    console.log("DATA:", data); // 👈 agregar
     resetPassword({ token, newPassword: data.newPassword });
   };
 
